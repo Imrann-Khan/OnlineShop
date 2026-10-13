@@ -16,14 +16,14 @@ class NotificationListener {
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    void onUserRegistered(UserRegisteredEvent event) {
-        notifier.send(event.email(), "Welcome!", "Hi " + event.name() + ", your account is ready.");
+    void onUserRegistered(UserRegisteredEvent e) {
+        notifier.send(new Notification(e.name(), e.email(), e.phone(),
+                "Welcome!", "Hi " + e.name() + ", your account is ready."));
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    void onOrderPlaced(OrderPlacedEvent event) {
-        notifier.send(event.customerEmail(),
-                "Order #" + event.orderId() + " confirmed",
-                "Thank you! Total: $" + event.total());
+    void onOrderPlaced(OrderPlacedEvent e) {
+        notifier.send(new Notification(e.customerName(), e.customerEmail(), e.customerPhone(),
+                "Order #" + e.orderId() + " confirmed", "Thank you! Total: $" + e.total()));
     }
 }

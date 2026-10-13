@@ -27,8 +27,8 @@ public class UserService {
         if (users.existsByEmailIgnoreCase(email)) {
             throw new ConflictException("Email already in use: " + email);
         }
-        User saved = users.save(new User(request.name().trim(), email));
-        events.publishEvent(new UserRegisteredEvent(saved.getId(), saved.getName(), email));
+        User saved = users.save(new User(request.name().trim(), email, request.phone()));
+        events.publishEvent(new UserRegisteredEvent(saved.getId(), saved.getName(), email,  request.phone()));
         return UserResponse.from(saved);
     }
 

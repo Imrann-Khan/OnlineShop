@@ -1,6 +1,7 @@
 package org.example.shop.order;
 
 import jakarta.validation.Valid;
+import org.example.shop.order.receipt.ReceiptService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -13,9 +14,11 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService service;
+    private final ReceiptService receipts;
 
-    public OrderController(OrderService service) {
+    public OrderController(OrderService service,  ReceiptService receipts) {
         this.service = service;
+        this.receipts = receipts;
     }
 
     @PostMapping
@@ -24,6 +27,13 @@ public class OrderController {
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}").buildAndExpand(created.id()).toUri();
         return ResponseEntity.created(location).body(created);
+    }
+
+    @GetMapping("/{id}/receipt")
+    public ResponseEntity<String> receipt(@PathVariable Long id,
+                                          @RequestParam(defaultValue = "text") String format) {
+        ReceiptService.Receipt receipt = receipts.render(id, format);
+        return ResponseEntity.ok().contentType(receipt.mediaType()).body(receipt.content());
     }
 
     @GetMapping("/{id}")

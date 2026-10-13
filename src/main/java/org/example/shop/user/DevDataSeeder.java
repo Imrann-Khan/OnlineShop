@@ -26,9 +26,9 @@ class DevDataSeeder implements CommandLineRunner {
             return;
         }
         users.saveAll(List.of(
-                new User("Rahim Uddin", "rahim@example.com"),
-                new User("Sara Khan", "sara@example.com"),
-                new User("Shop Admin", "admin@example.com")));
+                new User("Rahim Uddin", "rahim@example.com", "+8801829417865"),
+                new User("Sara Khan", "sara@example.com", "+880182941754"),
+                new User("Shop Admin", "admin@example.com","8801829417567")));
         log.info("Seeded 3 demo users");
     }
 }

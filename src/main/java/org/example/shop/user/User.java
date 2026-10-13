@@ -14,6 +14,9 @@ public class User {
     @Column(nullable = false, length = 100)
     private String name;
 
+    @Column(length = 20)
+    private String phone;
+
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -22,9 +25,10 @@ public class User {
 
     protected User() {}
 
-    public User(String name, String email) {
+    public User(String name, String email, String phone) {
         this.name = name;
         this.email = email;
+        this.phone = phone;
     }
 
     @PrePersist
@@ -35,6 +39,8 @@ public class User {
     // Intention-revealing methods instead of public setters
     public void rename(String name) { this.name = name; }
     public void changeEmail(String email) { this.email = email; }
+    public void changePhone(String phone) { this.phone = phone; }
+    public String getPhone() { return phone; }
 
     public Long getId() { return id; }
     public String getName() { return name; }

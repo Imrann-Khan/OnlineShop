@@ -16,12 +16,12 @@ interface OrderRepository extends JpaRepository<Order, Long> {
 
     // Order history: only the columns the screen needs, computed by the database
     @Query("""
-            select new org.example.shop.order.OrderSummary(
-                o.id, o.status, o.createdAt, count(i), sum(i.unitPrice * i.quantity))
-            from Order o join o.items i
-            where o.customer.id = :userId
-            group by o.id, o.status, o.createdAt
-            order by o.createdAt desc
-            """)
+        select new org.example.shop.order.OrderSummary(
+            o.id, o.status, o.createdAt, count(i), (sum(i.unitPrice * i.quantity) - o.discount))
+        from Order o join o.items i
+        where o.customer.id = :userId
+        group by o.id, o.status, o.createdAt, o.discount
+        order by o.createdAt desc
+        """)
     List<OrderSummary> findSummariesByCustomerId(@Param("userId") Long userId);
 }

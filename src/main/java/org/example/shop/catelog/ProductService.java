@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -30,6 +31,13 @@ public class ProductService {
                 ? products.findAll(pageable)
                 : products.findByCategoriesId(categoryId, pageable);
         return page.map(ProductResponse::from);
+    }
+
+    public List<ProductResponse> findLowStock(Collection<Long> ids, int threshold) {
+        return products.findAllById(ids).stream()
+                .filter(p -> p.getStock() < threshold)
+                .map(ProductResponse::from)
+                .toList();
     }
 
     public ProductResponse get(Long id) {

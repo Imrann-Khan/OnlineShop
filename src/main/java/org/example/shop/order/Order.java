@@ -29,6 +29,29 @@ public class Order {
     @Column(nullable = false, length = 20)
     private OrderStatus status;
 
+    @Column(name = "promo_code", length = 30)
+    private String promoCode;                             // null when no code was used
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal discount = BigDecimal.ZERO;
+
+    public void applyDiscount(String promoCode, BigDecimal discount) {
+        this.promoCode = promoCode;
+        this.discount = discount;
+    }
+
+    public BigDecimal subtotal() {
+        return items.stream().map(OrderItem::lineTotal).reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal total() {
+        return subtotal().subtract(discount);
+    }
+
+    public int totalQuantity() {
+        return items.stream().mapToInt(OrderItem::getQuantity).sum();
+    }
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -56,10 +79,9 @@ public class Order {
         ));
     }
 
-    public BigDecimal total() {
-        return items.stream().map(OrderItem::lineTotal).reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
 
+    public String getPromoCode() { return promoCode; }
+    public BigDecimal getDiscount() { return discount; }
     public Long getId() { return id; }
     public User getCustomer() { return customer; }
     public List<OrderItem> getItems() { return Collections.unmodifiableList(items); }

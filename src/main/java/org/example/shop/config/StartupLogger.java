@@ -27,7 +27,7 @@ class StartupLogger {
         String[] profiles = active.length > 0 ? active : environment.getDefaultProfiles();
         log.info("Shop API ready | profiles={} | notifications={} | page size={}/{}",
                 Arrays.toString(profiles),
-                props.notifications().channel(),
+                props.notifications().channels(),
                 props.pagination().defaultSize(),
                 props.pagination().maxSize());
     }
