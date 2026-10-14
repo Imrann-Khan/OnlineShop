@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.naming.AuthenticationException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -48,9 +49,13 @@ public class GlobalExceptionHandler {
                 "The data was changed by another request. Please try again.");
     }
 
-    // in GlobalExceptionHandler
     @ExceptionHandler(BadRequestException.class)
     ProblemDetail handleBadRequest(BadRequestException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    ProblemDetail handleAuthentication(AuthenticationException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Invalid email or password");
     }
 }

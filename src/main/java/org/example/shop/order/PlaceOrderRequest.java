@@ -6,7 +6,6 @@ import jakarta.validation.constraints.*;
 import java.util.List;
 
 public record PlaceOrderRequest(
-        @NotNull Long userId,
         @NotEmpty @Size(max = 50) @Valid List<Line> items,
         @Size(max = 30) String promoCode) {
 

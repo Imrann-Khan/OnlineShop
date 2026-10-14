@@ -14,6 +14,9 @@ interface OrderRepository extends JpaRepository<Order, Long> {
     @EntityGraph(attributePaths = {"items", "items.product"})
     Optional<Order> findWithItemsById(Long id);
 
+    @Query("select o.customer.id from Order o where o.id = :id")
+    Optional<Long> findCustomerIdById(@Param("id") Long id);
+
     // Order history: only the columns the screen needs, computed by the database
     @Query("""
         select new org.example.shop.order.OrderSummary(

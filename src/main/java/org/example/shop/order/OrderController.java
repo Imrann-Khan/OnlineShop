@@ -2,7 +2,10 @@ package org.example.shop.order;
 
 import jakarta.validation.Valid;
 import org.example.shop.order.receipt.ReceiptService;
+import org.example.shop.security.CurrentUser;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -22,11 +25,17 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<OrderResponse> place(@Valid @RequestBody PlaceOrderRequest request) {
-        OrderResponse created = service.placeOrder(request);
+    public ResponseEntity<OrderResponse> place(@AuthenticationPrincipal Jwt jwt,
+                                               @Valid @RequestBody PlaceOrderRequest request) {
+        OrderResponse created = service.placeOrder(CurrentUser.id(jwt), request);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}").buildAndExpand(created.id()).toUri();
         return ResponseEntity.created(location).body(created);
+    }
+
+    @GetMapping
+    public List<OrderSummary> history(@AuthenticationPrincipal Jwt jwt) {    // my orders, no userId parameter
+        return service.history(CurrentUser.id(jwt));
     }
 
     @GetMapping("/{id}/receipt")
@@ -39,10 +48,5 @@ public class OrderController {
     @GetMapping("/{id}")
     public OrderResponse get(@PathVariable Long id) {
         return service.getOrder(id);
-    }
-
-    @GetMapping
-    public List<OrderSummary> history(@RequestParam Long userId) {   // temporary until Phase 4
-        return service.history(userId);
     }
 }

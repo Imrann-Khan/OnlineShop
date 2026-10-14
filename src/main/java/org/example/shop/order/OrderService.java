@@ -9,6 +9,7 @@ import org.example.shop.discount.DiscountService;
 import org.example.shop.user.User;
 import org.example.shop.user.UserService;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,10 +38,10 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse placeOrder(PlaceOrderRequest request) {
-        audit.record("ORDER_ATTEMPT", "user=" + request.userId() + ", lines=" + request.items().size());
+    public OrderResponse placeOrder(Long userId, PlaceOrderRequest request) {
+        audit.record("ORDER_ATTEMPT", "user=" + userId + ", lines=" + request.items().size());
 
-        User customer = users.findEntity(request.userId());
+        User customer = users.findEntity(userId);
         Order order = new Order(customer);
         for (PlaceOrderRequest.Line line : request.items()) {
             Product product = products.reserveStock(line.productId(), line.quantity());
@@ -62,6 +63,7 @@ public class OrderService {
         return OrderResponse.from(saved);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or @orderSecurity.isOwner(#id, authentication)")
     public OrderResponse getOrder(Long id) {
         return orders.findWithItemsById(id)
                 .map(OrderResponse::from)

@@ -20,15 +20,24 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
     protected User() {}
 
-    public User(String name, String email, String phone) {
+    public User(String name, String email, String phone, String passwordHash, Role role) {
         this.name = name;
         this.email = email;
         this.phone = phone;
+        this.passwordHash = passwordHash;
+        this.role = role;
     }
 
     @PrePersist
@@ -46,4 +55,6 @@ public class User {
     public String getName() { return name; }
     public String getEmail() { return email; }
     public Instant getCreatedAt() { return createdAt; }
+    public String getPasswordHash() { return passwordHash; }
+    public Role getRole() { return role; }
 }
