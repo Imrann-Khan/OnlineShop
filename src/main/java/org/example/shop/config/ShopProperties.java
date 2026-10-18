@@ -27,6 +27,8 @@ public record ShopProperties(
     public record Security(
             @NotBlank @Size(min = 32) String jwtSecret,
             @NotNull Duration tokenValidity,
-            @NotEmpty List<String> allowedOrigins
+            @NotEmpty List<String> allowedOrigins,
+            @Min(1) int maxLoginFailures,
+            @NotNull Duration loginLockout
     ){}
 }

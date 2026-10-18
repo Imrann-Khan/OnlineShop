@@ -3,6 +3,12 @@ package org.example.shop.catelog;
 
 import org.example.shop.common.ConflictException;
 import org.example.shop.common.NotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,10 +25,17 @@ public class ProductService {
 
     private final ProductRepository products;
     private final CategoryRepository categories;
+    private static final Logger log = LoggerFactory.getLogger(ProductService.class);
 
     public ProductService(ProductRepository products, CategoryRepository categories) {
         this.products = products;
         this.categories = categories;
+    }
+
+    @Cacheable(cacheNames = "products", key = "#id")
+    public ProductResponse get(Long id) {
+        log.info("Loading product {} from the database", id);           // appears only on a cache miss
+        return ProductResponse.from(getProduct(id));
     }
 
     //  reads
@@ -40,9 +53,6 @@ public class ProductService {
                 .toList();
     }
 
-    public ProductResponse get(Long id) {
-        return ProductResponse.from(getProduct(id));
-    }
 
     public List<CategoryResponse> listCategories() {
         return categories.findAll(Sort.by("name")).stream().map(CategoryResponse::from).toList();
@@ -56,6 +66,7 @@ public class ProductService {
     }
 
     @Transactional
+    @Caching(put = @CachePut(cacheNames = "products", key = "#id"))
     public ProductResponse update(Long id, ProductRequest r) {
         Product product = getProduct(id);
         product.update(r.name().trim(), r.description(), r.price(), r.stock(), r.featured());
@@ -63,6 +74,9 @@ public class ProductService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "products", key = "#id"),
+    })
     public void delete(Long id) {
         products.delete(getProduct(id));   // fails with 409 if any order references it (foreign key)
     }
@@ -76,6 +90,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CachePut(cacheNames = "products", key = "#productId")
     public ProductResponse addToCategory(Long productId, Long categoryId) {
         Product product = getProduct(productId);
         product.addCategory(getCategory(categoryId));
@@ -83,6 +98,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CachePut(cacheNames = "products", key = "#productId")
     public ProductResponse removeFromCategory(Long productId, Long categoryId) {
         Product product = getProduct(productId);
         product.removeCategory(getCategory(categoryId));          // DELETE one join row
@@ -93,6 +109,7 @@ public class ProductService {
     // MANDATORY: must run inside the caller's transaction, otherwise the stock change
     // would commit on its own even if the order later fails.
     @Transactional(propagation = Propagation.MANDATORY)
+    @CacheEvict(cacheNames = "products", key = "#productId")
     public Product reserveStock(Long productId, int quantity) {
         Product product = getProduct(productId);
         product.reduceStock(quantity);
